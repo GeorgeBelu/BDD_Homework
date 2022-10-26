@@ -2,6 +2,7 @@ package org.example.pageobject.pages;
 
 import org.example.pageobject.BasePage;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -12,8 +13,6 @@ public class HomePage extends BasePage
 {
     @FindBy(id = "nav-global-location-popover-link")
     protected WebElement deliverField;
-    @FindBy(xpath = "//div[@id='desktop-grid-2']//a")
-    protected WebElement categoryPage;
 
     public HomePage(WebDriver webDriver)
     {
@@ -32,39 +31,33 @@ public class HomePage extends BasePage
         return this;
     }
 
-    public HomePage startPage()
+    public void clickOnDeliverTo()
     {
         deliverField.click();
-        selectRegionFromDropDown().click();
-
-        WebElement doneButton = getElementBy(NAME, "glowDoneButton", 10);
-        doneButton.click();
-        webDriver.navigate().refresh();
-
-        return this;
     }
 
-    public ProductPage openCategory()
+    public void applyZipCode(String zipCode)
     {
-        categoryPage.click();
-        return new ProductPage(webDriver);
-    }
-
-    public HomePage applyZipCode(String zipCode)
-    {
-        deliverField.click();
-        WebElement zipCodeField = getElementBy(ID, "GLUXZipUpdateInput", 10);
-        zipCodeField.sendKeys(zipCode);
-
-        WebElement applyButton = getElementBy(XPATH, "//div[@class='a-column a-span4 a-span-last']", 10);
-        applyButton.click();
+       enterZipCode(zipCode);
 
         WebElement applyZipCodePopUpButton = getElementBy(XPATH, "//div[@class='a-popover-footer']/span", 10);
         applyZipCodePopUpButton.click();
 
         webDriver.navigate().refresh();
 
-        return this;
+    }
+    public String invalidZipCodeErrorMessage()
+    {
+        WebElement errorMessage = getElementBy(ID,"GLUXZipError", 10);
+        return errorMessage.getText();
+    }
+    public void enterZipCode(String zipCode)
+    {
+        WebElement zipCodeField = getElementBy(ID, "GLUXZipUpdateInput", 10);
+        zipCodeField.sendKeys(zipCode);
+
+        WebElement applyButton = getElementBy(XPATH, "//div[@class='a-column a-span4 a-span-last']", 10);
+        applyButton.click();
     }
     public String zipCodeAddressUpdated()
     {
@@ -72,34 +65,23 @@ public class HomePage extends BasePage
 
         return deliverFieldUpdated.getText().replaceAll("\\D", "");
     }
-
-    public String isRegionPresent()
+    public boolean isRegionPresent(String country)
     {
-        deliverField.click();
-        return selectRegionFromDropDown().getText();
+        clickOnDeliverTo();
+        selectDropDownList();
+        try
+        {
+            webDriver.findElement(By.xpath("//a[text()='"+ country +"']"));
+        } catch (NoSuchElementException e)
+        {
+            return false;
+        }
+        return true;
     }
-
-    private WebElement selectRegionFromDropDown()
+    private void selectDropDownList()
     {
         WebElement dropDownButton = getElementBy(ID, "GLUXCountryListDropdown", 10);
         dropDownButton.click();
-        return getElementBy(XPATH, "//a[text()='"+ COUNTRY +"']", 10);
     }
-
-    public SignInPage signIn()
-    {
-        deliverField.click();
-
-        WebElement signInButton = getElementBy(ID,"GLUXSignInButton",10);
-        signInButton.click();
-
-        return new SignInPage(webDriver);
-    }
-
-
-
-
-
-
 
 }
