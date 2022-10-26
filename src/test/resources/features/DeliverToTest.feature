@@ -40,7 +40,7 @@ Feature: Deliver To functionality
       |Poland |
       |Myanmarr|
 
-
+# Myanmarr should fail because it's not in the list
 
 
 
